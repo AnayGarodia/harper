@@ -121,6 +121,35 @@ mod tests {
         );
     }
 
+    // The coordinated bare verb after "and" settles the infinitive reading. (#3826)
+    #[test]
+    fn corrects_to_breath_coordinated_with_verb() {
+        assert_suggestion_result(
+            "feels great to see Gary given space to breath and explain fully",
+            NounVerbConfusion::default(),
+            "feels great to see Gary given space to breathe and explain fully",
+        );
+    }
+
+    #[test]
+    fn corrects_to_breath_coordinated_with_verb_or() {
+        assert_suggestion_result(
+            "I didn't have time to breath or relax before the wave hit.",
+            NounVerbConfusion::default(),
+            "I didn't have time to breathe or relax before the wave hit.",
+        );
+    }
+
+    // "to breath and <noun>" is a plain noun phrase and must stay unflagged.
+    #[test]
+    fn dont_flag_to_breath_coordinated_with_noun() {
+        assert_lint_count(
+            "Listen to breath and heart sounds during the physical exam.",
+            NounVerbConfusion::default(),
+            0,
+        );
+    }
+
     #[test]
     fn does_not_flag_correct_believe() {
         assert_lint_count("I believe in you.", NounVerbConfusion::default(), 0);

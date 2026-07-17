@@ -51,9 +51,16 @@ impl Default for GeneralNounInsteadOfVerb {
             .then_whitespace()
             .then_any_word();
 
+        let pattern_followed_by_conj_and_word = SequenceExpr::with(basic_pattern.clone())
+            .then_whitespace()
+            .then_word_set(&["and", "or"])
+            .then_whitespace()
+            .then_any_word();
+
         Self {
             expr: Box::new(LongestMatchOf::new([
-                Box::new(pattern_followed_by_punctuation) as Box<dyn Expr>,
+                Box::new(pattern_followed_by_conj_and_word) as Box<dyn Expr>,
+                Box::new(pattern_followed_by_punctuation),
                 Box::new(pattern_followed_by_word),
                 Box::new(basic_pattern),
             ])),
@@ -70,6 +77,17 @@ impl ExprLinter for GeneralNounInsteadOfVerb {
 
     fn match_to_lint(&self, toks: &[Token], src: &[char]) -> Option<Lint> {
         let prev_tok = &toks[0];
+
+        // "to <noun> and/or <verb>" is a coordinated infinitive ("space to
+        // breath and explain"), so the word after the conjunction settles the
+        // verb reading - as long as that word can't also be a noun ("listened
+        // to breath and heart sounds" stays a noun phrase).
+        let coordinates_with_verb = toks.len() > 6
+            && toks[4]
+                .get_ch(src)
+                .eq_any_ignore_ascii_case_str(&["and", "or"])
+            && toks[6].kind.is_verb()
+            && !toks[6].kind.is_noun();
 
         // If we have the next word token, try to rule out compound nouns
         if toks.len() > 4 {
@@ -88,7 +106,10 @@ impl ExprLinter for GeneralNounInsteadOfVerb {
             }
 
             // If the previous word is "to", use the following word to disambiguate
-            if prev_tok.get_ch(src).eq_ch(&['t', 'o']) && !following_tok.kind.is_determiner() {
+            if prev_tok.get_ch(src).eq_ch(&['t', 'o'])
+                && !following_tok.kind.is_determiner()
+                && !coordinates_with_verb
+            {
                 return None;
             }
         }
