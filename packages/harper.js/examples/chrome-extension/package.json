@@ -1,0 +1,16 @@
+{
+	"name": "harperjs-chrome-extension-example",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc && vite build"
+	},
+	"dependencies": {
+		"harper.js": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"vite": "^6.1.0"
+	}
+}

@@ -115,6 +115,9 @@ test-harperjs: build-harperjs
   cd "{{justfile_directory()}}/packages/harper.js/examples/commonjs-simple"
   pnpm start
 
+  cd "{{justfile_directory()}}/packages/harper.js/examples/chrome-extension"
+  pnpm build
+
 test-obsidian: build-obsidian
   #!/usr/bin/env bash
   set -eo pipefail
